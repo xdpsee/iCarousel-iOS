@@ -22,6 +22,8 @@
 
 - (void)dealloc {
     _carousel = nil;
+    _images = nil;
+    _placeholderImage = nil;
 }
 
 - (void)viewDidLoad {
@@ -67,7 +69,7 @@
     //this step is expensive, so if you don't need
     //unique reflections for each item, don't do this
     //and you'll get much smoother peformance
-    [view refresh];
+    //[view refresh];
     
     return view;
 }
@@ -98,7 +100,7 @@
     //this step is expensive, so if you don't need
     //unique reflections for each item, don't do this
     //and you'll get much smoother peformance
-    [view refresh];
+    //[view refresh];
     
     return view;
 }
