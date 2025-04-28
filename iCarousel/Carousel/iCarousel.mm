@@ -1197,29 +1197,27 @@ NSInteger compareViewDepth(UIView *view1, UIView *view2, iCarousel *self) {
 
 - (void)removeItemAtIndex:(NSInteger)index animated:(BOOL)animated {
     index = [self clampedIndex:index];
-    UIView *itemView = [self itemViewAtIndex:index];
+    __block UIView *itemView = [self itemViewAtIndex:index];
     
     if (animated) {
-        [UIView beginAnimations:nil context:nil];
-        [UIView setAnimationDuration:0.1];
-        [UIView setAnimationDelegate:itemView.superview];
-        [UIView setAnimationDidStopSelector:@selector(removeFromSuperview)];
-        [self performSelector:@selector(queueItemView:) withObject:itemView afterDelay:0.1];
-        itemView.superview.layer.opacity = 0.0;
-        [UIView commitAnimations];
+        [UIView animateWithDuration:0.1 animations:^{
+            [self performSelector:@selector(queueItemView:) withObject:itemView afterDelay:0.1];
+            itemView.superview.layer.opacity = 0.0;
+        } completion:^(BOOL __unused finished) {
+            [itemView.superview removeFromSuperview];
+        }];
         
-        [UIView beginAnimations:nil context:nil];
-        [UIView setAnimationDelay:0.1];
-        [UIView setAnimationDuration:INSERT_DURATION];
-        [UIView setAnimationDelegate:self];
-        [UIView setAnimationDidStopSelector:@selector(depthSortViews)];
-        [self removeViewAtIndex:index];
-        _numberOfItems --;
-        _wrapEnabled = !![self valueForOption:iCarouselOptionWrap withDefault:_wrapEnabled];
-        [self updateNumberOfVisibleItems];
-        _scrollOffset = self.currentItemIndex;
-        [self didScroll];
-        [UIView commitAnimations];
+        [UIView animateWithDuration:INSERT_DURATION delay:0.1 options:UIViewAnimationOptionCurveLinear animations:^{
+            [self removeViewAtIndex:index];
+            self->_numberOfItems--;
+            self->_wrapEnabled = !![self valueForOption:iCarouselOptionWrap withDefault:self->_wrapEnabled];
+            [self updateNumberOfVisibleItems];
+            self->_scrollOffset = self.currentItemIndex;
+            [self didScroll];
+        } completion:^(BOOL __unused finished) {
+            [self depthSortViews];
+        }];
+        
     } else {
         [self pushAnimationState:NO];
         [self queueItemView:itemView];
@@ -1248,17 +1246,11 @@ NSInteger compareViewDepth(UIView *view1, UIView *view2, iCarousel *self) {
     }
     
     if (animated) {
-        /*[UIView beginAnimations:nil context:nil];
-         [UIView setAnimationDuration:INSERT_DURATION];
-         [UIView setAnimationDelegate:self];
-         [UIView setAnimationDidStopSelector:@selector(didScroll)];
-         [self transformItemViews];
-         [UIView commitAnimations];*/
-        
         [UIView animateWithDuration:INSERT_DURATION delay:0 options:0 animations:^{
             [self transformItemViews];
-        } completion:^(BOOL __unused finished) {
             [self didScroll];
+        } completion:^(BOOL __unused finished) {
+            
         }];
         
     } else {
@@ -1561,21 +1553,21 @@ NSInteger compareViewDepth(UIView *view1, UIView *view2, iCarousel *self) {
     }
     
     /*UIView *itemView = [self itemViewAtPoint:[gesture locationInView:_contentView]];
-    NSInteger index = itemView? [self indexOfItemView:itemView]: NSNotFound;
-    if (index != NSNotFound) {
-        if (!_delegate || [_delegate carousel:self shouldSelectItemAtIndex:index]) {
-            if ((index != self.currentItemIndex && _centerItemWhenSelected) ||
-                (index == self.currentItemIndex && _scrollToItemBoundary)) {
-                [self scrollToItemAtIndex:index animated:YES];
-            }
-            
-            [_delegate carousel:self didSelectItemAtIndex:index];
-        } else if (_scrollEnabled && _scrollToItemBoundary && _autoscroll) {
-            [self scrollToItemAtIndex:self.currentItemIndex animated:YES];
-        }
-    } else {
-        [self scrollToItemAtIndex:self.currentItemIndex animated:YES];
-    }*/
+     NSInteger index = itemView? [self indexOfItemView:itemView]: NSNotFound;
+     if (index != NSNotFound) {
+     if (!_delegate || [_delegate carousel:self shouldSelectItemAtIndex:index]) {
+     if ((index != self.currentItemIndex && _centerItemWhenSelected) ||
+     (index == self.currentItemIndex && _scrollToItemBoundary)) {
+     [self scrollToItemAtIndex:index animated:YES];
+     }
+     
+     [_delegate carousel:self didSelectItemAtIndex:index];
+     } else if (_scrollEnabled && _scrollToItemBoundary && _autoscroll) {
+     [self scrollToItemAtIndex:self.currentItemIndex animated:YES];
+     }
+     } else {
+     [self scrollToItemAtIndex:self.currentItemIndex animated:YES];
+     }*/
 }
 
 - (void)didTap:(UITapGestureRecognizer *)tapGesture {
